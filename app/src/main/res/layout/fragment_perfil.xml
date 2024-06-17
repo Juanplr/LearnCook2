@@ -40,12 +40,24 @@
         android:textSize="20sp" />
 
     <Button
-        android:id="@+id/btn_eliminarP"
+        android:id="@+id/btn_Buscar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginStart="10dp"
         android:layout_marginTop="400dp"
+        android:fontFamily="@font/roboto"
+        android:text="Buscar usuario"
+        android:textColor="#021D3D"
+        android:textSize="20sp" />
+
+    <Button
+        android:id="@+id/btn_eliminarP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="500dp"
         android:fontFamily="@font/roboto"
         android:text="Eliminar Perfil"
         android:textColor="#FF1100"

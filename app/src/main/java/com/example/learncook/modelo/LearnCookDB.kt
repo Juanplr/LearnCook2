@@ -638,5 +638,44 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         return filasAfectadas
     }
 
+    fun seguirUsuario(idSeguidor: String, idSeguido: Int): Boolean {
+        val db = writableDatabase
+        val valoresInsert = ContentValues().apply {
+            put(COL_USUARIO_ID_SEGUIDOR, idSeguidor)
+            put(COL_SEGUIDO_ID, idSeguido)
+        }
+        val resultado = db.insert(NOMBRE_TABLA_SEGUIDOR, null, valoresInsert)
+        db.close()
+        return resultado != -1L  // Retorna true si se insertó correctamente, false si hubo algún error
+    }
+    fun traerUsuarioPorNombre(nombreUsuario: String): Usuario? {
+        val db = readableDatabase
+        val columnas = arrayOf(COL_ID_USUARIO, COL_CORREO, COL_CONTRASENA, COL_NOMBRE_USUARIO)
+        val selection = "$COL_NOMBRE_USUARIO = ?"
+        val selectionArgs = arrayOf(nombreUsuario)
+        val cursor = db.query(
+            NOMBRE_TABLA_USUARIO,
+            columnas,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        var usuario: Usuario? = null
+        if (cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_USUARIO))
+            val correo = cursor.getString(cursor.getColumnIndexOrThrow(COL_CORREO))
+            val contrasena = cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTRASENA))
+            val nombre = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
+            usuario = Usuario(id, correo, contrasena, nombre)
+        }
+        cursor.close()
+        db.close()
+        return usuario
+    }
+
+
 
 }

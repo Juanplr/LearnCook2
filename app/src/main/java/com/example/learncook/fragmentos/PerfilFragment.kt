@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.learncook.LoginActivity
+import com.example.learncook.SeguirUsuarioActivity
 import com.example.learncook.databinding.FragmentPerfilBinding
 import com.example.learncook.modelo.LearnCookDB
 
@@ -47,6 +48,11 @@ class PerfilFragment : Fragment() {
 
         binding.btnEliminarP.setOnClickListener {
             eliminarCuenta()
+        }
+        binding.btnBuscar.setOnClickListener {
+            val intent = Intent(requireContext(), SeguirUsuarioActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
         }
     }
 

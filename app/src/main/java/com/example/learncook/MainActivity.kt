@@ -7,7 +7,6 @@ import com.example.learncook.databinding.ActivityMainBinding
 import com.example.learncook.fragmentos.HomeFragment
 import com.example.learncook.fragmentos.PerfilFragment
 import com.example.learncook.fragmentos.RecetaFragment
-import com.example.learncook.fragmentos.UsuariosFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -31,10 +30,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.item_perfil -> {
                     openFragment(PerfilFragment.newInstance(idUsuario))
-                    true
-                }
-                R.id.item_usuarios -> {
-                    openFragment(UsuariosFragment.newInstance(idUsuario))
                     true
                 }
                 R.id.item_receta -> {
