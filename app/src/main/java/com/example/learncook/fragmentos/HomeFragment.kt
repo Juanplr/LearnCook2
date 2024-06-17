@@ -1,10 +1,13 @@
 package com.example.learncook.fragmentos
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.learncook.BuscarIngredienteActivity
+import com.example.learncook.BuscarPresupuestoActivity
 import com.example.learncook.databinding.FragmentHomeBinding
 
 private const val ARG_PARAM1 = "idUsuario"
@@ -30,7 +33,18 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.home.text = ""+idUsuario
+
+
+        // Configurar los listeners para los botones
+        binding.btnBuscarP.setOnClickListener {
+            val intent = Intent(requireContext(), BuscarPresupuestoActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnBuscarI.setOnClickListener {
+            val intent = Intent(requireContext(), BuscarIngredienteActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     companion object {

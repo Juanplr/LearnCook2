@@ -676,6 +676,79 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         return usuario
     }
 
+    fun obtenerNombresTodosIngredientes(): List<String> {
+        val db = readableDatabase
+        val columnas = arrayOf(COL_NOMBRE)
+        val cursor = db.query(NOMBRE_TABLA_INGREDIENTE, columnas, null, null, null, null, null)
+
+        val nombresIngredientes = mutableListOf<String>()
+
+        with(cursor) {
+            while (moveToNext()) {
+                val nombreIngrediente = getString(getColumnIndexOrThrow(COL_NOMBRE))
+                nombresIngredientes.add(nombreIngrediente)
+            }
+        }
+
+        cursor.close()
+        db.close()
+        return nombresIngredientes
+    }
+
+    fun buscarRecetasPorIngredientes(ingredientes: List<String>): List<RecetaDatos> {
+        val db = this.readableDatabase
+        val recetas = mutableListOf<RecetaDatos>()
+
+        val ingredientesString = ingredientes.joinToString("', '", "'", "'")
+        val query = """
+        SELECT r.$COL_ID_RECETA, r.$COL_NOMBRE_RECETA, r.$COL_TIEMPO, r.$COL_PRESUPUESTO, r.$COL_PREPARACION, u.$COL_NOMBRE_USUARIO
+        FROM $NOMBRE_TABLA_RECETA r
+        INNER JOIN $NOMBRE_TABLA_RECETAINGREDIENTES ri ON r.$COL_ID_RECETA = ri.$COL_RECETA_ID
+        INNER JOIN $NOMBRE_TABLA_INGREDIENTE i ON ri.$COL_INGREDIENTE_ID = i.$COL_ID_INGREDIENTE
+        INNER JOIN $NOMBRE_TABLA_USUARIO u ON r.$COL_USUARIO_ID = u.$COL_ID_USUARIO
+        WHERE i.$COL_NOMBRE IN ($ingredientesString)
+        GROUP BY r.$COL_ID_RECETA, r.$COL_NOMBRE_RECETA, r.$COL_TIEMPO, r.$COL_PRESUPUESTO, r.$COL_PREPARACION, u.$COL_NOMBRE_USUARIO
+        HAVING COUNT(DISTINCT i.$COL_NOMBRE) = ?
+    """
+
+        val cursor = db.rawQuery(query, arrayOf(ingredientes.size.toString()))
+        if (cursor.moveToFirst()) {
+            do {
+                val idReceta = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
+                val nombreReceta = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_RECETA))
+                val tiempo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIEMPO))
+                val presupuesto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
+                val preparacion = cursor.getString(cursor.getColumnIndexOrThrow(COL_PREPARACION))
+                val nombreUsuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
+
+                val ingredientesQuery = """
+                SELECT i.$COL_ID_INGREDIENTE, i.$COL_NOMBRE, i.$COL_PRECIO 
+                FROM $NOMBRE_TABLA_INGREDIENTE i
+                INNER JOIN $NOMBRE_TABLA_RECETAINGREDIENTES ri ON i.$COL_ID_INGREDIENTE = ri.$COL_INGREDIENTE_ID
+                WHERE ri.$COL_RECETA_ID = ?
+            """
+                val ingredientesCursor = db.rawQuery(ingredientesQuery, arrayOf(idReceta.toString()))
+                val ingredientesList = mutableListOf<Ingrediente>()
+                if (ingredientesCursor.moveToFirst()) {
+                    do {
+                        val idIngrediente = ingredientesCursor.getInt(ingredientesCursor.getColumnIndexOrThrow(COL_ID_INGREDIENTE))
+                        val nombreIngrediente = ingredientesCursor.getString(ingredientesCursor.getColumnIndexOrThrow(COL_NOMBRE))
+                        val precio = ingredientesCursor.getDouble(ingredientesCursor.getColumnIndexOrThrow(COL_PRECIO))
+                        ingredientesList.add(Ingrediente(idIngrediente, nombreIngrediente, precio))
+                    } while (ingredientesCursor.moveToNext())
+                }
+                ingredientesCursor.close()
+
+                recetas.add(RecetaDatos(idReceta, nombreUsuario, nombreReceta, tiempo, presupuesto, preparacion, ingredientesList))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+
+        return recetas
+    }
+    
+
+
 
 
 }
