@@ -21,7 +21,6 @@ class LoginActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
         modelo = LearnCookDB(this@LoginActivity)
-        modelo.agregarUsuario(Usuario(-1,"juanlazarorp@gmail.com","qwertyui","Juan"))
         binding.btnIngreso.setOnClickListener {
             val correo = binding.etCorreo.text.toString()
             val contrasena = binding.etContrasena.text.toString()

@@ -34,11 +34,11 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.item_usuarios -> {
-                    openFragment(UsuariosFragment())
+                    openFragment(UsuariosFragment.newInstance(idUsuario))
                     true
                 }
                 R.id.item_receta -> {
-                    openFragment(RecetaFragment())
+                    openFragment(RecetaFragment.newInstance(idUsuario))
                     true
                 }
                 else -> false

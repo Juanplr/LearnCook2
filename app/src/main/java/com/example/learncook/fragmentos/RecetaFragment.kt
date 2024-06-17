@@ -1,60 +1,93 @@
 package com.example.learncook.fragmentos
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.learncook.R
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.learncook.AgregarRecetaActivity
+import com.example.learncook.adaptadores.RecetaAdapter
+import com.example.learncook.databinding.FragmentRecetaBinding
+import com.example.learncook.interfaces.ListenerRecycleReceta
+import com.example.learncook.modelo.LearnCookDB
+import com.example.learncook.poko.RecetaDatos
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val ARG_ID_USUARIO = "idUsuario"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [RecetaFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class RecetaFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+class RecetaFragment : Fragment(), ListenerRecycleReceta {
+    private lateinit var binding: FragmentRecetaBinding
+    private var idUsuario: Int = -1
+    private lateinit var modelo: LearnCookDB
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            idUsuario = it.getInt(ARG_ID_USUARIO)
         }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_receta, container, false)
+    ): View {
+        binding = FragmentRecetaBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        modelo = LearnCookDB(requireContext())
+
+        binding.btnAgregarReceta.setOnClickListener {
+            val intent = Intent(requireContext(), AgregarRecetaActivity::class.java)
+            intent.putExtra("idUsuario", idUsuario)
+            startActivity(intent)
+        }
+        cargarMisRecetas()
+        configuracionRecycle()
+
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment RecetaFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(idUsuario: Int) =
             RecetaFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putInt(ARG_ID_USUARIO, idUsuario)
                 }
             }
+    }
+
+    override fun clicEditarReceta(receta: RecetaDatos, position: Int) {
+        // Implementación pendiente según lo necesario
+    }
+
+    override fun clicEliminarReceta(receta: RecetaDatos, position: Int) {
+        // Implementación pendiente según lo necesario
+    }
+
+    override fun clicCalificarReceta(receta: RecetaDatos, position: Int) {
+        // Implementación pendiente según lo necesario
+    }
+
+    override fun clicCompartirReceta(receta: RecetaDatos, position: Int) {
+        // Implementación pendiente según lo necesario
+    }
+    private fun cargarMisRecetas(){
+        val recetas = modelo.obtenerRecetasDatosPorUsuario(idUsuario);
+        if(recetas.size>0){
+            binding.tvMensajeRecetas.visibility = View.GONE
+            binding.recycleRecetas.visibility = View.VISIBLE
+            binding.recycleRecetas.adapter = RecetaAdapter(recetas,this@RecetaFragment)
+        }else{
+            binding.tvMensajeRecetas.visibility = View.VISIBLE
+            binding.recycleRecetas.visibility = View.GONE
+        }
+    }
+    private fun configuracionRecycle(){
+        binding.recycleRecetas.layoutManager = LinearLayoutManager(context)
+        binding.recycleRecetas.setHasFixedSize(true)
     }
 }
