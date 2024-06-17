@@ -5,14 +5,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.learncook.LoginActivity
 import com.example.learncook.databinding.FragmentPerfilBinding
+import com.example.learncook.modelo.LearnCookDB
 
 private const val ARG_ID_USUARIO = "idUsuario"
 
 class PerfilFragment : Fragment() {
     private lateinit var binding: FragmentPerfilBinding
+    private lateinit var modelo: LearnCookDB
     private var idUsuario: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +23,8 @@ class PerfilFragment : Fragment() {
         arguments?.let {
             idUsuario = it.getInt(ARG_ID_USUARIO)
         }
+        modelo = LearnCookDB(requireContext())
+
     }
 
     override fun onCreateView(
@@ -39,6 +44,34 @@ class PerfilFragment : Fragment() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
+
+        binding.btnEliminarP.setOnClickListener {
+            eliminarCuenta()
+        }
+    }
+
+    private fun eliminarCuenta() {
+        // Aquí llamamos al método para eliminar el usuario de la base de datos
+        val eliminadoExitosamente = modelo.eliminarUsuario(idUsuario)
+
+        if (eliminadoExitosamente) {
+            // Mostrar mensaje de éxito y guiar al usuario de vuelta al inicio de sesión o pantalla principal
+            mostrarMensaje("Cuenta eliminada correctamente.")
+            // Crear un Intent para ir a LoginActivity
+            val intent = Intent(requireContext(), LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            requireActivity().finish() // Cerrar la actividad actual
+
+        } else {
+            // Mostrar mensaje de error si no se pudo eliminar la cuenta
+            mostrarMensaje("Error al eliminar la cuenta. Por favor, inténtalo nuevamente.")
+        }
+    }
+
+    private fun mostrarMensaje(mensaje: String) {
+        // Método para mostrar un Toast o AlertDialog con el mensaje proporcionado
+        Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
     }
 
     companion object {

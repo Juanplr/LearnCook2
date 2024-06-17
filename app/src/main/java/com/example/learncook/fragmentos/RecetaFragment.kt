@@ -5,9 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.learncook.AgregarRecetaActivity
+import com.example.learncook.CalificarRecetaActivity
+import com.example.learncook.EditarRecetaActivity
+import com.example.learncook.MainActivity
 import com.example.learncook.adaptadores.RecetaAdapter
 import com.example.learncook.databinding.FragmentRecetaBinding
 import com.example.learncook.interfaces.ListenerRecycleReceta
@@ -61,19 +65,40 @@ class RecetaFragment : Fragment(), ListenerRecycleReceta {
     }
 
     override fun clicEditarReceta(receta: RecetaDatos, position: Int) {
-        // Implementación pendiente según lo necesario
+        val intent = Intent(requireContext(), EditarRecetaActivity::class.java)
+        intent.putExtra("idReceta",receta.idReceta)
+        startActivity(intent)
     }
 
     override fun clicEliminarReceta(receta: RecetaDatos, position: Int) {
-        // Implementación pendiente según lo necesario
+        var idReceta = receta.idReceta
+        var elimidado = modelo.eliminarReceta(idReceta);
+        if(elimidado>0){
+            Toast.makeText(context, "Receta eliminada", Toast.LENGTH_SHORT).show()
+            cargarMisRecetas()
+        }
     }
 
     override fun clicCalificarReceta(receta: RecetaDatos, position: Int) {
-        // Implementación pendiente según lo necesario
+        val intent = Intent(requireContext(), CalificarRecetaActivity::class.java)
+        intent.putExtra("idUsuario",idUsuario)
+        intent.putExtra("idReceta",receta.idReceta)
+        intent.putExtra("nombreReceta",receta.nombreReceta)
+        startActivity(intent)
     }
 
     override fun clicCompartirReceta(receta: RecetaDatos, position: Int) {
-        // Implementación pendiente según lo necesario
+        val mensaje = "Receta: ${receta.nombreReceta}\n" +
+                "Elaborada: ${receta.nombreUsuario}\n" +
+                "Ingredientes: ${receta.ingredientes.toString()}\n" +
+                "Tiempo: ${receta.tiempo}\n" +
+                "Elaboracion: ${receta.preparacion}" +
+                "Presupuesto: ${receta.presupuesto}"
+
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, mensaje)
+        startActivity(Intent.createChooser(intent, "Compartir Receta!"))
     }
     private fun cargarMisRecetas(){
         val recetas = modelo.obtenerRecetasDatosPorUsuario(idUsuario);

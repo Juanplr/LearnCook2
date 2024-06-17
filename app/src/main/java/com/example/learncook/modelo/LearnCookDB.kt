@@ -7,6 +7,8 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.example.learncook.poko.Calificacion
+import com.example.learncook.poko.CalificacionDatos
 import com.example.learncook.poko.Ingrediente
 import com.example.learncook.poko.Receta
 import com.example.learncook.poko.RecetaDatos
@@ -435,5 +437,206 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
 
         return recetasDatos
     }
+    @SuppressLint("Range")
+    fun traerCalificacionesDeReceta(id: Int): List<CalificacionDatos> {
+        val calificaciones = mutableListOf<CalificacionDatos>()
+        val db = readableDatabase
+        val columnas = arrayOf(
+            "$NOMBRE_TABLA_USUARIO.$COL_NOMBRE_USUARIO",
+            "$NOMBRE_TABLA_CALIFICACIONES.$COL_PUNTUACION",
+            "$NOMBRE_TABLA_CALIFICACIONES.$COL_COMENTARIO"
+        )
+        val whereClause = "$COL_RECETA_ID_CALIFICACION = ?"
+        val whereArgs = arrayOf(id.toString())
+
+        val query = "SELECT ${columnas.joinToString()} " +
+                "FROM $NOMBRE_TABLA_CALIFICACIONES " +
+                "INNER JOIN $NOMBRE_TABLA_USUARIO " +
+                "ON $NOMBRE_TABLA_CALIFICACIONES.$COL_USUARIO_ID_CALIFICACION = " +
+                "$NOMBRE_TABLA_USUARIO.$COL_ID_USUARIO " +
+                "WHERE $whereClause"
+
+        val cursor: Cursor? = db.rawQuery(query, whereArgs)
+
+        cursor?.use { cursor ->
+            while (cursor.moveToNext()) {
+                val nombreUsuario = cursor.getString(cursor.getColumnIndex(COL_NOMBRE_USUARIO))
+                val puntuacion = cursor.getInt(cursor.getColumnIndex(COL_PUNTUACION))
+                val comentario = cursor.getString(cursor.getColumnIndex(COL_COMENTARIO))
+                val calificacion = CalificacionDatos(nombreUsuario, puntuacion, comentario)
+                calificaciones.add(calificacion)
+            }
+        }
+        cursor?.close()
+        db.close()
+
+        return calificaciones
+    }
+    fun agregarCalificacion(calificacion: Calificacion): Long {
+        val db = writableDatabase
+        val valoresInsert = ContentValues().apply {
+            put(COL_USUARIO_ID_CALIFICACION,calificacion.idUsuario)
+            put(COL_RECETA_ID_CALIFICACION, calificacion.idReceta)
+            put(COL_PUNTUACION, calificacion.puntuacion)
+            put(COL_COMENTARIO, calificacion.comentario)
+        }
+        val filas = db.insert(NOMBRE_TABLA_CALIFICACIONES, null, valoresInsert)
+        db.close()
+        return filas
+    }
+
+    fun traerNombreDeUsuario(idUsuario: Int): String? {
+        val db = readableDatabase
+        var nombreUsuario: String? = null
+
+        val query = "SELECT $COL_NOMBRE_USUARIO FROM $NOMBRE_TABLA_USUARIO WHERE $COL_ID_USUARIO = ?"
+
+        val cursor: Cursor?
+        try {
+            cursor = db.rawQuery(query, arrayOf(idUsuario.toString()))
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    nombreUsuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
+                }
+                cursor.close()
+            }
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.close()
+        }
+
+        return nombreUsuario
+    }
+    fun traerUsuario2(idUsuario: Int): Usuario? {
+        val db = readableDatabase
+        val columnas = arrayOf(COL_ID_USUARIO, COL_CORREO, COL_CONTRASENA, COL_NOMBRE_USUARIO)
+        val selection = "$COL_ID_USUARIO = ?"
+        val selectionArgs = arrayOf(idUsuario.toString())
+        val cursor = db.query(
+            NOMBRE_TABLA_USUARIO,
+            columnas,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        var usuario: Usuario? = null
+        if (cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_USUARIO))
+            val correo = cursor.getString(cursor.getColumnIndexOrThrow(COL_CORREO))
+            val contrasena = cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTRASENA))
+            val nombreUsuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
+            usuario = Usuario(id, correo, contrasena, nombreUsuario)
+        }
+        cursor.close()
+        db.close()
+        return usuario
+    }
+    fun actualizarCorreo(correoActual: String, nuevoCorreo: String): Int {
+        val db = writableDatabase
+        val valoresUpdate = ContentValues().apply {
+            put(COL_CORREO, nuevoCorreo)
+        }
+        val filasAfectadas = db.update(NOMBRE_TABLA_USUARIO, valoresUpdate, "$COL_CORREO = ?", arrayOf(correoActual))
+        db.close()
+        return filasAfectadas
+    }
+    fun eliminarUsuario(idUsuario: Int): Boolean {
+        val db = writableDatabase
+        val whereClauseUsuario = "$COL_ID_USUARIO = ?"
+        val whereArgsUsuario = arrayOf(idUsuario.toString())
+        val filasEliminadasUsuario = db.delete(NOMBRE_TABLA_USUARIO, whereClauseUsuario, whereArgsUsuario)
+
+        // También eliminamos cualquier otra información relacionada (ej. recetas del usuario, seguidores, calificaciones, etc.)
+        val whereClauseRecetas = "$COL_USUARIO_ID = ?"
+        val whereArgsRecetas = arrayOf(idUsuario.toString())
+        val filasEliminadasRecetas = db.delete(NOMBRE_TABLA_RECETA, whereClauseRecetas, whereArgsRecetas)
+
+        val whereClauseSeguidor = "$COL_USUARIO_ID_SEGUIDOR = ? OR $COL_SEGUIDO_ID = ?"
+        val whereArgsSeguidor = arrayOf(idUsuario.toString(), idUsuario.toString())
+        val filasEliminadasSeguidor = db.delete(NOMBRE_TABLA_SEGUIDOR, whereClauseSeguidor, whereArgsSeguidor)
+
+        val whereClauseCalificaciones = "$COL_USUARIO_ID_CALIFICACION = ?"
+        val whereArgsCalificaciones = arrayOf(idUsuario.toString())
+        val filasEliminadasCalificaciones = db.delete(NOMBRE_TABLA_CALIFICACIONES, whereClauseCalificaciones, whereArgsCalificaciones)
+
+        db.close()
+
+        // Retornamos true si se eliminó al menos una fila en alguna de las tablas relacionadas
+        return filasEliminadasUsuario > 0 || filasEliminadasRecetas > 0 || filasEliminadasSeguidor > 0 || filasEliminadasCalificaciones > 0
+    }
+
+    fun eliminarReceta(idReceta: Int): Long {
+        val db = writableDatabase
+        var result: Long = -1
+
+        try {
+            result = db.delete(NOMBRE_TABLA_RECETA, "$COL_ID_RECETA = ?", arrayOf(idReceta.toString())).toLong()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.close()
+        }
+
+        return result
+    }
+
+    fun obtenerReceta(idReceta: Int): Receta? {
+        val db = readableDatabase
+        var receta: Receta? = null
+
+        val query = """
+            SELECT 
+                $COL_ID_RECETA, 
+                $COL_USUARIO_ID,
+                $COL_NOMBRE_RECETA, 
+                $COL_TIEMPO, 
+                $COL_PRESUPUESTO, 
+                $COL_PREPARACION
+            FROM $NOMBRE_TABLA_RECETA 
+            WHERE $COL_ID_RECETA = ?
+        """.trimIndent()
+
+        try {
+            val cursor = db.rawQuery(query, arrayOf(idReceta.toString()))
+
+            if (cursor != null && cursor.moveToFirst()) {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
+                val idUsuario = cursor.getInt(cursor.getColumnIndexOrThrow(COL_USUARIO_ID))
+                val nombreReceta = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_RECETA))
+                val tiempo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIEMPO))
+                val presupuesto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
+                val preparacion = cursor.getString(cursor.getColumnIndexOrThrow(COL_PREPARACION))
+
+                receta = Receta(id, idUsuario, nombreReceta, tiempo, presupuesto, preparacion)
+            }
+
+            cursor?.close()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.close()
+        }
+
+        return receta
+    }
+
+    fun modificarReceta(receta: Receta): Int {
+        val db = writableDatabase
+        val valoresUpdate = ContentValues().apply {
+            put(COL_USUARIO_ID, receta.idUsuario)
+            put(COL_NOMBRE_RECETA, receta.nombreReceta)
+            put(COL_TIEMPO, receta.tiempo)
+            put(COL_PRESUPUESTO, receta.presupuseto)
+            put(COL_PREPARACION, receta.preparacion)
+        }
+        val filasAfectadas = db.update(NOMBRE_TABLA_RECETA, valoresUpdate, "$COL_ID_RECETA = ?", arrayOf(receta.id.toString()))
+        db.close()
+        return filasAfectadas
+    }
+
 
 }
