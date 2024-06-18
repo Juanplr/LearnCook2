@@ -69,7 +69,7 @@ class RecetaAdapter(private val recetas: List<RecetaDatos>, private val listener
         val receta = recetas[position]
 
         // Construir la lista de ingredientes
-        val ingredientes = receta.ingredientes.joinToString(separator = "\n") { it.nombre }
+        val ingredientes = receta.ingredientes?.joinToString(separator = "\n") { it.nombre }
 
         holder.tvNombreUsuario.text = receta.nombreUsuario
         holder.tvNombreReceta.text = receta.nombreReceta

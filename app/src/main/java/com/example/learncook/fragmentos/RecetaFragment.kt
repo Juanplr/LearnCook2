@@ -101,8 +101,12 @@ class RecetaFragment : Fragment(), ListenerRecycleReceta {
         startActivity(Intent.createChooser(intent, "Compartir Receta!"))
     }
     private fun cargarMisRecetas(){
-        val recetas = modelo.obtenerRecetasDatosPorUsuario(idUsuario);
+        val recetas = modelo.obtenerRecetasDatosPorUsuario(idUsuario)
+
         if(recetas.size>0){
+            for (receta:RecetaDatos in recetas){
+                receta.ingredientes = modelo.optenerLosIngredientesPorIdRecetas(receta.idReceta)
+            }
             binding.tvMensajeRecetas.visibility = View.GONE
             binding.recycleRecetas.visibility = View.VISIBLE
             binding.recycleRecetas.adapter = RecetaAdapter(recetas,this@RecetaFragment)

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.learncook.EditarPerfilActivity
 import com.example.learncook.LoginActivity
 import com.example.learncook.SeguirUsuarioActivity
 import com.example.learncook.databinding.FragmentPerfilBinding
@@ -52,6 +53,11 @@ class PerfilFragment : Fragment() {
         binding.btnBuscar.setOnClickListener {
             val intent = Intent(requireContext(), SeguirUsuarioActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        }
+        binding.btnEditarP.setOnClickListener{
+            val intent = Intent(requireContext(), EditarPerfilActivity::class.java)
+            intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
         }
     }

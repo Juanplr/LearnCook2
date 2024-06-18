@@ -365,68 +365,33 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
             r.$COL_NOMBRE_RECETA, 
             r.$COL_TIEMPO, 
             r.$COL_PRESUPUESTO, 
-            r.$COL_PREPARACION,
-            i.$COL_ID_INGREDIENTE,
-            i.$COL_NOMBRE,
-            i.$COL_PRECIO
-        FROM $NOMBRE_TABLA_RECETA r
-        INNER JOIN $NOMBRE_TABLA_USUARIO u ON r.$COL_USUARIO_ID = u.$COL_ID_USUARIO
-        INNER JOIN $NOMBRE_TABLA_RECETAINGREDIENTES ri ON r.$COL_ID_RECETA = ri.$COL_RECETA_ID
-        INNER JOIN $NOMBRE_TABLA_INGREDIENTE i ON ri.$COL_INGREDIENTE_ID = i.$COL_ID_INGREDIENTE
-        WHERE r.$COL_USUARIO_ID = ?
-    """.trimIndent()
+            r.$COL_PREPARACION
+        FROM $NOMBRE_TABLA_RECETA r, $NOMBRE_TABLA_USUARIO u
+        WHERE r.$COL_USUARIO_ID = ? """
 
         var cursor: Cursor? = null
 
         try {
             cursor = db.rawQuery(query, arrayOf(idUsuario.toString()))
 
-            var currentRecetaId = -1
-            var currentReceta: RecetaDatos? = null
-
             while (cursor.moveToNext()) {
                 val idReceta = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
+                val nombreUsuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
+                val nombreReceta = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_RECETA))
+                val tiempo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIEMPO))
+                val presupuesto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
+                val preparacion = cursor.getString(cursor.getColumnIndexOrThrow(COL_PREPARACION))
 
-                // Si es una nueva receta, crea una instancia de RecetaDatos
-                if (idReceta != currentRecetaId) {
-                    // Guarda la receta actual si ya existe
-                    if (currentReceta != null) {
-                        recetasDatos.add(currentReceta)
-                    }
-
-                    currentRecetaId = idReceta
-                    val nombreUsuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
-                    val nombreReceta = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_RECETA))
-                    val tiempo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIEMPO))
-                    val presupuesto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
-                    val preparacion = cursor.getString(cursor.getColumnIndexOrThrow(COL_PREPARACION))
-
-                    // Crea una nueva instancia de RecetaDatos
-                    currentReceta = RecetaDatos(
+                     var valoresReceta = RecetaDatos(
                         idReceta,
                         nombreUsuario,
                         nombreReceta,
                         tiempo,
                         presupuesto,
                         preparacion,
-                        mutableListOf()
+                       null
                     )
-                }
-
-                // Agrega el ingrediente a la lista de ingredientes de la receta actual
-                if (currentReceta != null) {
-                    val idIngrediente = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_INGREDIENTE))
-                    val nombreIngrediente = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE))
-                    val precioIngrediente = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRECIO))
-                    val ingrediente = Ingrediente(idIngrediente, nombreIngrediente, precioIngrediente)
-
-                    currentReceta.ingredientes.add(ingrediente)
-                }
-            }
-
-            // Agrega la última receta obtenida del cursor
-            if (currentReceta != null) {
-                recetasDatos.add(currentReceta)
+                recetasDatos.add(valoresReceta)
             }
         } catch (e: SQLException) {
             e.printStackTrace()
@@ -434,9 +399,45 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
             cursor?.close()
             db.close()
         }
-
         return recetasDatos
     }
+    fun optenerLosIngredientesPorIdRecetas(idReceta: Int): MutableList<Ingrediente> {
+        var ingredientes = mutableListOf<Ingrediente>()
+        var db = readableDatabase
+        val query = """
+    SELECT 
+        i.$COL_ID_INGREDIENTE,
+        i.$COL_NOMBRE,
+        i.$COL_PRECIO
+    FROM $NOMBRE_TABLA_RECETA r, $NOMBRE_TABLA_RECETAINGREDIENTES ri, $NOMBRE_TABLA_INGREDIENTE i
+    WHERE ri.$COL_RECETA_ID = ? AND ri.$COL_INGREDIENTE_ID = i.$COL_ID_INGREDIENTE
+    """
+        var cursor: Cursor? = null
+
+        try {
+            cursor = db.rawQuery(query, arrayOf(idReceta.toString()))
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_INGREDIENTE))
+                val nombre = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE))
+                val precio = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRECIO))
+
+                var valoresReceta = Ingrediente(
+                    id,
+                    nombre,
+                    precio
+                )
+                ingredientes.add(valoresReceta)
+            }
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            cursor?.close()
+            db.close()
+        }
+        return ingredientes
+    }
+
     @SuppressLint("Range")
     fun traerCalificacionesDeReceta(id: Int): List<CalificacionDatos> {
         val calificaciones = mutableListOf<CalificacionDatos>()
@@ -699,19 +700,26 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         val db = this.readableDatabase
         val recetas = mutableListOf<RecetaDatos>()
 
-        val ingredientesString = ingredientes.joinToString("', '", "'", "'")
+        if (ingredientes.isEmpty()) return recetas
+
+        // Crear una lista de marcadores de posición para la cláusula IN
+        val placeholders = ingredientes.joinToString(",") { "?" }
+
         val query = """
         SELECT r.$COL_ID_RECETA, r.$COL_NOMBRE_RECETA, r.$COL_TIEMPO, r.$COL_PRESUPUESTO, r.$COL_PREPARACION, u.$COL_NOMBRE_USUARIO
         FROM $NOMBRE_TABLA_RECETA r
         INNER JOIN $NOMBRE_TABLA_RECETAINGREDIENTES ri ON r.$COL_ID_RECETA = ri.$COL_RECETA_ID
         INNER JOIN $NOMBRE_TABLA_INGREDIENTE i ON ri.$COL_INGREDIENTE_ID = i.$COL_ID_INGREDIENTE
         INNER JOIN $NOMBRE_TABLA_USUARIO u ON r.$COL_USUARIO_ID = u.$COL_ID_USUARIO
-        WHERE i.$COL_NOMBRE IN ($ingredientesString)
+        WHERE i.$COL_NOMBRE IN ($placeholders)
         GROUP BY r.$COL_ID_RECETA, r.$COL_NOMBRE_RECETA, r.$COL_TIEMPO, r.$COL_PRESUPUESTO, r.$COL_PREPARACION, u.$COL_NOMBRE_USUARIO
         HAVING COUNT(DISTINCT i.$COL_NOMBRE) = ?
     """
 
-        val cursor = db.rawQuery(query, arrayOf(ingredientes.size.toString()))
+        // Convertir la lista de ingredientes a array y añadir el tamaño de la lista como parámetro para HAVING
+        val args = ingredientes.toTypedArray() + ingredientes.size.toString()
+
+        val cursor = db.rawQuery(query, args)
         if (cursor.moveToFirst()) {
             do {
                 val idReceta = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
@@ -746,9 +754,4 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
 
         return recetas
     }
-    
-
-
-
-
 }

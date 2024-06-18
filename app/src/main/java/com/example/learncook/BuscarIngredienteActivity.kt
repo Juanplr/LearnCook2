@@ -1,5 +1,6 @@
 package com.example.learncook
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.ArrayAdapter
@@ -53,8 +54,7 @@ class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
             }
         }
 
-        // Configurar el RecyclerView
-        binding.recycleRecetas.layoutManager = LinearLayoutManager(this)
+        configuracionRecycle()
     }
 
     private fun agregarIngrediente(ingrediente: String) {
@@ -93,19 +93,39 @@ class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
         }
     }
 
-    override fun clicCalificarReceta(receta: RecetaDatos, position: Int) {
-        // Lógica para calificar receta
-    }
-
-    override fun clicCompartirReceta(receta: RecetaDatos, position: Int) {
-        // Lógica para compartir receta
+    override fun clicEditarReceta(receta: RecetaDatos, position: Int) {
+        val intent = Intent(this, EditarRecetaActivity::class.java)
+        intent.putExtra("idReceta",receta.idReceta)
+        startActivity(intent)
     }
 
     override fun clicEliminarReceta(receta: RecetaDatos, position: Int) {
-        // Lógica para eliminar receta
+        var idReceta = receta.idReceta
+        var elimidado = learnCookDB.eliminarReceta(idReceta);
+        if(elimidado>0){
+            Toast.makeText(this, "Receta eliminada", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    override fun clicEditarReceta(receta: RecetaDatos, position: Int) {
-        // Lógica para editar receta
+    override fun clicCalificarReceta(receta: RecetaDatos, position: Int) {
+        Toast.makeText(this, "no puedes hacer esto ahorita", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun clicCompartirReceta(receta: RecetaDatos, position: Int) {
+        val mensaje = "Receta: ${receta.nombreReceta}\n" +
+                "Elaborada: ${receta.nombreUsuario}\n" +
+                "Ingredientes: ${receta.ingredientes.toString()}\n" +
+                "Tiempo: ${receta.tiempo}\n" +
+                "Elaboracion: ${receta.preparacion}" +
+                "Presupuesto: ${receta.presupuesto}"
+
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, mensaje)
+        startActivity(Intent.createChooser(intent, "Compartir Receta!"))
+    }
+    private fun configuracionRecycle(){
+        binding.recycleRecetas.layoutManager = LinearLayoutManager(this)
+        binding.recycleRecetas.setHasFixedSize(true)
     }
 }
