@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.learncook.BuscarIngredienteActivity
 import com.example.learncook.BuscarPresupuestoActivity
+import com.example.learncook.EditarPerfilActivity
 import com.example.learncook.databinding.FragmentHomeBinding
 
 private const val ARG_PARAM1 = "idUsuario"
@@ -43,6 +44,7 @@ class HomeFragment : Fragment() {
 
         binding.btnBuscarI.setOnClickListener {
             val intent = Intent(requireContext(), BuscarIngredienteActivity::class.java)
+            intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
         }
     }

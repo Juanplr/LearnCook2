@@ -18,7 +18,6 @@ class AgregarRecetaActivity : AppCompatActivity() {
     private lateinit var modelo: LearnCookDB
     private lateinit var adapter: ArrayAdapter<String>
     private lateinit var listaDeIngredientes: MutableList<Ingrediente>
-    private val ingredientesSeleccionados = mutableListOf<Ingrediente>()
     private var idUsuario = 0
     private var presupuesto = 0.0
     private val listaId = mutableListOf<Int>()
@@ -53,7 +52,7 @@ class AgregarRecetaActivity : AppCompatActivity() {
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
-                binding.spIngredientesReceta.setSelection(-1)
+                binding.spIngredientesReceta.setSelection(0)
             }
         }
 
@@ -93,7 +92,6 @@ class AgregarRecetaActivity : AppCompatActivity() {
         builder.setPositiveButton("OK") { dialog, which ->
             val cantidad = input.text.toString().toDoubleOrNull()
             if (cantidad != null && cantidad > 0) {
-                ingredientesSeleccionados.add(ingrediente)
                 listaCantidad.add(cantidad)
 
                 val textoActual = binding.etIngredientes.text.toString()

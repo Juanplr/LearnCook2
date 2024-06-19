@@ -3,6 +3,8 @@ package com.example.learncook
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TableRow
 import android.widget.TextView
@@ -14,60 +16,76 @@ import com.example.learncook.adaptadores.RecetaAdapter
 import com.example.learncook.databinding.ActivityBuscarIngredienteBinding
 import com.example.learncook.interfaces.ListenerRecycleReceta
 import com.example.learncook.modelo.LearnCookDB
+import com.example.learncook.poko.Ingrediente
 import com.example.learncook.poko.RecetaDatos
 
 class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
     private lateinit var binding: ActivityBuscarIngredienteBinding
     private lateinit var learnCookDB: LearnCookDB
     private lateinit var adapter: ArrayAdapter<String>
+    private lateinit var listaDeIngredientes: List<Ingrediente>
     private lateinit var recetaAdapter: RecetaAdapter
-    private lateinit var recetas: List<RecetaDatos>
+    private  var recetas = mutableListOf<RecetaDatos>()
+    private lateinit var ingredienteSeleccionado: Ingrediente
+    private var idIngrediente = mutableListOf<Int>()
+    private var idUsuario = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBuscarIngredienteBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         learnCookDB = LearnCookDB(this)
+        idUsuario = intent.getIntExtra("idUsuario",-1)
+        listaDeIngredientes = learnCookDB.traerIngredientes()
 
-        // Obtener todos los nombres de ingredientes desde la base de datos
-        val nombresIngredientes = learnCookDB.obtenerNombresTodosIngredientes()
-
-        // Configurar el Spinner con los nombres de los ingredientes
-        adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, nombresIngredientes)
+        adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            listaDeIngredientes.map { it.nombre }
+        )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
         binding.spinnerIngredientes.adapter = adapter
 
-        // Configurar el botón de agregar ingrediente
-        binding.btnAgregar.setOnClickListener {
-            val ingrediente = binding.spinnerIngredientes.selectedItem.toString()
-            agregarIngrediente(ingrediente)
+        binding.spinnerIngredientes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+
+                if (position >= 1 && position < listaDeIngredientes.size) {
+                    ingredienteSeleccionado = listaDeIngredientes[position]
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                binding.spinnerIngredientes.setSelection(0)
+            }
         }
 
-        // Configurar el botón de búsqueda
+        binding.btnAgregar.setOnClickListener {
+            agregarIngrediente(ingredienteSeleccionado)
+        }
+
         binding.btnBuscar.setOnClickListener {
+            configuracionRecycle()
             val ingredientesSeleccionados = obtenerIngredientesSeleccionados()
             if (ingredientesSeleccionados.isNotEmpty()) {
-                buscarRecetasPorIngredientes(ingredientesSeleccionados)
+                buscarRecetasPorIngredientes()
             } else {
                 Toast.makeText(this, "Agregue al menos un ingrediente", Toast.LENGTH_SHORT).show()
             }
         }
-
-        configuracionRecycle()
     }
 
-    private fun agregarIngrediente(ingrediente: String) {
-        // Crear una nueva fila para la tabla
+    private fun agregarIngrediente(ingrediente: Ingrediente) {
         val nuevaFila = TableRow(this)
         val textView = TextView(this)
-        textView.text = ingrediente
+        textView.text = ingrediente.nombre
         textView.setTextColor(Color.WHITE)
         textView.setPadding(16, 16, 16, 16)
         nuevaFila.addView(textView)
 
-        // Añadir la nueva fila a la tabla
+
         binding.tblIngredientes.addView(nuevaFila)
+        idIngrediente.add(ingrediente.id)
 
         Toast.makeText(this, "Ingrediente agregado: $ingrediente", Toast.LENGTH_SHORT).show()
     }
@@ -82,38 +100,51 @@ class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
         return ingredientesSeleccionados
     }
 
-    private fun buscarRecetasPorIngredientes(ingredientes: List<String>) {
-        recetas = learnCookDB.buscarRecetasPorIngredientes(ingredientes)
+    private fun buscarRecetasPorIngredientes() {
+        //mutableSetOf guarda los conjuntos no permiten elementos duplicados por naturaleza.
+        val recetasUnicas = mutableSetOf<RecetaDatos>()
+        if (idIngrediente.isNotEmpty()) {
+            for (id in idIngrediente) {
+                val recetasEncontradas = learnCookDB.buscarRecetasPorIngredientes(id)
+                recetasUnicas.addAll(recetasEncontradas)
+            }
 
-        if (recetas.isNotEmpty()) {
-            recetaAdapter = RecetaAdapter(recetas, this)
+            recetas.clear()
+            recetas.addAll(recetasUnicas)
+
+            for (receta in recetas) {
+                receta.ingredientes = learnCookDB.optenerLosIngredientesPorIdRecetas(receta.idReceta)
+            }
+
+            recetaAdapter = RecetaAdapter(recetas, this@BuscarIngredienteActivity)
             binding.recycleRecetas.adapter = recetaAdapter
+            recetaAdapter.notifyDataSetChanged()
         } else {
             Toast.makeText(this, "No se encontraron recetas con los ingredientes seleccionados", Toast.LENGTH_SHORT).show()
         }
     }
 
+
+
     override fun clicEditarReceta(receta: RecetaDatos, position: Int) {
-        val intent = Intent(this, EditarRecetaActivity::class.java)
-        intent.putExtra("idReceta",receta.idReceta)
-        startActivity(intent)
+        Toast.makeText(this, "no puedes hacer esto con esta receta", Toast.LENGTH_SHORT).show()
     }
 
     override fun clicEliminarReceta(receta: RecetaDatos, position: Int) {
-        var idReceta = receta.idReceta
-        var elimidado = learnCookDB.eliminarReceta(idReceta);
-        if(elimidado>0){
-            Toast.makeText(this, "Receta eliminada", Toast.LENGTH_SHORT).show()
-        }
+        Toast.makeText(this, "no puedes hacer esto con esta receta", Toast.LENGTH_SHORT).show()
     }
 
     override fun clicCalificarReceta(receta: RecetaDatos, position: Int) {
-        Toast.makeText(this, "no puedes hacer esto ahorita", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this@BuscarIngredienteActivity, CalificarRecetaActivity::class.java)
+        intent.putExtra("idUsuario",idUsuario)
+        intent.putExtra("idReceta",receta.idReceta)
+        intent.putExtra("nombreReceta",receta.nombreReceta)
+        startActivity(intent)
     }
 
     override fun clicCompartirReceta(receta: RecetaDatos, position: Int) {
         val mensaje = "Receta: ${receta.nombreReceta}\n" +
-                "Elaborada: ${receta.nombreUsuario}\n" +
+                "Elaborada por: ${receta.nombreUsuario}\n" +
                 "Ingredientes: ${receta.ingredientes.toString()}\n" +
                 "Tiempo: ${receta.tiempo}\n" +
                 "Elaboracion: ${receta.preparacion}" +
