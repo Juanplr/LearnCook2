@@ -277,6 +277,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
     @SuppressLint("Range")
     fun traerIngredientes(): List<Ingrediente>{
         val misIngredientes = mutableListOf<Ingrediente>()
+        misIngredientes.add(Ingrediente(-1,"Selecciona Un Ingrediente",0.0,0.0))
         val db = readableDatabase
         val resultadoConsulta: Cursor? = db.query(
             NOMBRE_TABLA_INGREDIENTE, null, null,
@@ -286,7 +287,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
                 val id = resultadoConsulta.getInt(resultadoConsulta.getColumnIndex(COL_ID_INGREDIENTE))
                 val nombre = resultadoConsulta.getString(resultadoConsulta.getColumnIndex(COL_NOMBRE))
                 val precio = resultadoConsulta.getDouble(resultadoConsulta.getColumnIndex(COL_PRECIO))
-                val ingrediente = Ingrediente(id, nombre, precio)
+                val ingrediente = Ingrediente(id, nombre, precio, 0.0)
                 misIngredientes.add(ingrediente)
             }
             resultadoConsulta.close()
@@ -323,7 +324,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
 
         return ultimoId
     }
-    fun agregarIngredientes(id: Int, lista: List<Int>): Int {
+    fun agregarIngredientes(id: Int, lista: List<Int>, listaCantidad: List<Double>): Int {
         val db = writableDatabase
         var resultado: Int = -1
 
@@ -331,16 +332,17 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
             db.beginTransaction()
 
             for (ids in lista) {
+                var numero =0
                 val contentValues = ContentValues().apply {
                     put(COL_RECETA_ID, id)
                     put(COL_INGREDIENTE_ID, ids)
-                    put(COL_CANTIDAD, 1)
-                    // Aquí puedes agregar más campos si es necesario, como la cantidad
+                    put(COL_CANTIDAD, listaCantidad.get(numero))
                 }
                 val insertResult = db.insert(NOMBRE_TABLA_RECETAINGREDIENTES, null, contentValues)
                 if (insertResult == -1L) {
                     throw SQLException("Error al insertar ingredientes")
                 }
+                numero++
             }
 
             db.setTransactionSuccessful()
@@ -408,7 +410,8 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
     SELECT DISTINCT
         i.$COL_ID_INGREDIENTE,
         i.$COL_NOMBRE,
-        i.$COL_PRECIO
+        i.$COL_PRECIO,
+        ri.$COL_CANTIDAD
     FROM $NOMBRE_TABLA_RECETA r, $NOMBRE_TABLA_RECETAINGREDIENTES ri, $NOMBRE_TABLA_INGREDIENTE i
     WHERE ri.$COL_RECETA_ID = ? AND ri.$COL_INGREDIENTE_ID = i.$COL_ID_INGREDIENTE
     """
@@ -421,11 +424,12 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_INGREDIENTE))
                 val nombre = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE))
                 val precio = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRECIO))
-
+                val cantidad = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_CANTIDAD))
                 val valoresReceta = Ingrediente(
                     id,
                     nombre,
-                    precio
+                    precio,
+                    cantidad
                 )
                 ingredientes.add(valoresReceta)
             }
@@ -743,7 +747,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
                         val idIngrediente = ingredientesCursor.getInt(ingredientesCursor.getColumnIndexOrThrow(COL_ID_INGREDIENTE))
                         val nombreIngrediente = ingredientesCursor.getString(ingredientesCursor.getColumnIndexOrThrow(COL_NOMBRE))
                         val precio = ingredientesCursor.getDouble(ingredientesCursor.getColumnIndexOrThrow(COL_PRECIO))
-                        ingredientesList.add(Ingrediente(idIngrediente, nombreIngrediente, precio))
+                        ingredientesList.add(Ingrediente(idIngrediente, nombreIngrediente, precio,0.0))
                     } while (ingredientesCursor.moveToNext())
                 }
                 ingredientesCursor.close()

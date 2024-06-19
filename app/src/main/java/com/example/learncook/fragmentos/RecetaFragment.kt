@@ -54,6 +54,10 @@ class RecetaFragment : Fragment(), ListenerRecycleReceta {
         configuracionRecycle()
 
     }
+    override fun onResume() {
+        super.onResume()
+        cargarMisRecetas()
+    }
 
     companion object {
         @JvmStatic
@@ -90,7 +94,7 @@ class RecetaFragment : Fragment(), ListenerRecycleReceta {
 
     override fun clicCompartirReceta(receta: RecetaDatos, position: Int) {
         val mensaje = "Receta: ${receta.nombreReceta}\n" +
-                "Elaborada: ${receta.nombreUsuario}\n" +
+                "Elaborada por: ${receta.nombreUsuario}\n" +
                 "Ingredientes: ${receta.ingredientes.toString()}\n" +
                 "Tiempo: ${receta.tiempo}\n" +
                 "Elaboracion: ${receta.preparacion}" +

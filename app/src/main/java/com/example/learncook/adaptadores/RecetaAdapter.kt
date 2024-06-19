@@ -68,9 +68,7 @@ class RecetaAdapter(private val recetas: List<RecetaDatos>, private val listener
     override fun onBindViewHolder(holder: ViewHolderReceta, position: Int) {
         val receta = recetas[position]
 
-        // Construir la lista de ingredientes
-        val ingredientes = receta.ingredientes?.joinToString(separator = "\n") { it.nombre }
-
+        val ingredientes = receta.ingredientes?.joinToString(separator = "\n") { "${it.cantidad} - ${it.nombre}" }
         holder.tvNombreUsuario.text = receta.nombreUsuario
         holder.tvNombreReceta.text = receta.nombreReceta
         holder.tvTiempo.text = receta.tiempo
