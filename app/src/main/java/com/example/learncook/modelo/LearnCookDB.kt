@@ -367,12 +367,12 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
             r.$COL_PRESUPUESTO, 
             r.$COL_PREPARACION
         FROM $NOMBRE_TABLA_RECETA r, $NOMBRE_TABLA_USUARIO u
-        WHERE r.$COL_USUARIO_ID = ? """
+        WHERE r.$COL_USUARIO_ID = ?  AND  u.$COL_ID_USUARIO = ?"""
 
         var cursor: Cursor? = null
 
         try {
-            cursor = db.rawQuery(query, arrayOf(idUsuario.toString()))
+            cursor = db.rawQuery(query, arrayOf(idUsuario.toString(),idUsuario.toString()))
 
             while (cursor.moveToNext()) {
                 val idReceta = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
@@ -402,10 +402,10 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         return recetasDatos
     }
     fun optenerLosIngredientesPorIdRecetas(idReceta: Int): MutableList<Ingrediente> {
-        var ingredientes = mutableListOf<Ingrediente>()
-        var db = readableDatabase
+        val ingredientes = mutableListOf<Ingrediente>()
+        val db = readableDatabase
         val query = """
-    SELECT 
+    SELECT DISTINCT
         i.$COL_ID_INGREDIENTE,
         i.$COL_NOMBRE,
         i.$COL_PRECIO
@@ -422,7 +422,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
                 val nombre = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE))
                 val precio = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRECIO))
 
-                var valoresReceta = Ingrediente(
+                val valoresReceta = Ingrediente(
                     id,
                     nombre,
                     precio
@@ -437,6 +437,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         }
         return ingredientes
     }
+
 
     @SuppressLint("Range")
     fun traerCalificacionesDeReceta(id: Int): List<CalificacionDatos> {
