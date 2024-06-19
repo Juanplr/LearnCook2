@@ -16,11 +16,18 @@ class IngredienteAdapter (val ingredientes: List<Ingrediente>, private val liste
         val tvNombreIngrediente: TextView = itemView.findViewById(R.id.tv_nombre_ingrediente)
         val etCantidad: EditText = itemView.findViewById(R.id.tv_cantidad_ingrediente)
         val btnEliminar: Button = itemView.findViewById(R.id.btn_eliminar_ingrediente)
+        val btnEditar: Button = itemView.findViewById(R.id.btn_editar_ingrediente)
         init {
             btnEliminar.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     listener.clicEliminarIngrediente(ingredientes[position],position)
+                }
+            }
+            btnEditar.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.clicEditarIngrediente(ingredientes[position],position, etCantidad)
                 }
             }
         }

@@ -53,16 +53,32 @@
                     android:textColor="#021D3D"
                     android:textStyle="bold"/>
             </LinearLayout>
-            <Button
-                android:id="@+id/btn_eliminar_ingrediente"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Eliminar"
-                android:fontFamily="@font/roboto"
-                android:layout_marginStart="10dp"
-                android:textSize="15sp"
-                android:textColor="#021D3D"
-                android:textStyle="bold"/>
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btn_eliminar_ingrediente"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Eliminar"
+                    android:fontFamily="@font/roboto"
+                    android:layout_marginStart="10dp"
+                    android:textSize="15sp"
+                    android:textColor="#021D3D"
+                    android:textStyle="bold"/>
+                <Button
+                    android:id="@+id/btn_editar_ingrediente"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Editar"
+                    android:fontFamily="@font/roboto"
+                    android:layout_marginStart="10dp"
+                    android:textSize="15sp"
+                    android:textColor="#021D3D"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

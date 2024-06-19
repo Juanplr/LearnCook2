@@ -2,11 +2,11 @@ package com.example.learncook
 
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.learncook.adaptadores.IngredienteAdapter
-import com.example.learncook.adaptadores.RecetaAdapter
 import com.example.learncook.databinding.ActivityEditarRecetaBinding
 import com.example.learncook.interfaces.ListenerRecycleIngrediente
 import com.example.learncook.modelo.LearnCookDB
@@ -59,14 +59,40 @@ class EditarRecetaActivity : AppCompatActivity(), ListenerRecycleIngrediente {
     }
 
     private fun validarDatos(): Boolean {
-        return binding.etNombreReceta.text.isNotEmpty() &&
-                binding.etTiempoReceta.text.isNotEmpty() &&
-                binding.etPreparacion.text.isNotEmpty()
+        var bandera = false
+        if(binding.etNombreReceta.text.isNotEmpty() && binding.etTiempoReceta.text.isNotEmpty() && binding.etPreparacion.text.isNotEmpty()){
+            bandera = true
+        }else{
+            Toast.makeText(this, "favor de llenar todos los datos", Toast.LENGTH_SHORT).show()
+        }
+        return bandera
     }
 
-    override fun clicEliminarIngrediente(Ingrediente: Ingrediente, position: Int) {
+    override fun clicEliminarIngrediente(ingrediente: Ingrediente, position: Int) {
+        if (modelo.eliminarIngrediente(ingrediente.id)>0){
+            ingredientes =  modelo.optenerLosIngredientesPorIdRecetas(idReceta)
+            traerIngredientes()
+            Toast.makeText(this, "Ingrediente eliminado", Toast.LENGTH_SHORT).show()
+        }else{
+            Toast.makeText(this, "No se pudo eliminar el Ingrediente", Toast.LENGTH_SHORT).show()
+        }
 
     }
+
+    override fun clicEditarIngrediente(ingrediente: Ingrediente, position: Int, etCantidad: EditText){
+        var cantidad= etCantidad.text.toString().toDouble()
+        if(etCantidad.text.isNotEmpty() && cantidad > 0){
+            ingrediente.cantidad = etCantidad.text.toString().toDouble()
+            if(modelo.editarIngrediente(ingrediente)>0){
+                ingredientes =  modelo.optenerLosIngredientesPorIdRecetas(idReceta)
+                traerIngredientes()
+                Toast.makeText(this, "Ingrediente editado", Toast.LENGTH_SHORT).show()
+            }
+        }else{
+            Toast.makeText(this, "no puedes agregar un ingrediente sin un dato o menor a 0", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun traerIngredientes() {
         if (ingredientes != null) {
             if (ingredientes.isNotEmpty()) {

@@ -733,4 +733,27 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         }
         return recetas
     }
+
+    fun eliminarIngrediente(idIngrediente: Int): Long {
+        val db = writableDatabase
+        var result: Long = -1
+
+        try {
+            result = db.delete(NOMBRE_TABLA_RECETAINGREDIENTES, "$COL_INGREDIENTE_ID = ?", arrayOf(idIngrediente.toString())).toLong()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.close()
+        }
+        return result
+    }
+    fun editarIngrediente(ingrediente: Ingrediente): Int {
+        val db = writableDatabase
+        val valoresUpdate = ContentValues().apply {
+            put(COL_CANTIDAD, ingrediente.cantidad)
+        }
+        val filasAfectadas = db.update(NOMBRE_TABLA_RECETAINGREDIENTES, valoresUpdate, "$COL_INGREDIENTE_ID = ?", arrayOf(ingrediente.id.toString()))
+        db.close()
+        return filasAfectadas
+    }
 }
