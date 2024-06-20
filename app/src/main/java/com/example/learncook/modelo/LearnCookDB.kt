@@ -808,4 +808,29 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
 
         return resultado
     }
+
+    fun buscarRecetasPorPresupuesto(presupuesto: Double): List<Receta> {
+        val db = readableDatabase
+        val recetas = mutableListOf<Receta>()
+        val cursor = db.rawQuery("SELECT * FROM $NOMBRE_TABLA_RECETA WHERE $COL_PRESUPUESTO <= ?", arrayOf(presupuesto.toString()))
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
+                val usuarioId = cursor.getInt(cursor.getColumnIndexOrThrow(COL_USUARIO_ID))
+                val nombreReceta = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_RECETA))
+                val tiempo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIEMPO))
+                val presupuestoReceta = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
+                val preparacion = cursor.getString(cursor.getColumnIndexOrThrow(COL_PREPARACION))
+
+                val receta = Receta(id, usuarioId, nombreReceta, tiempo, presupuestoReceta, preparacion)
+                recetas.add(receta)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return recetas
+    }
+
+
 }
