@@ -31,12 +31,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="Presupuesto"
+            android:fontFamily="@font/roboto"
             android:layout_gravity="center_horizontal"
             android:layout_marginEnd="60dp"
             android:layout_marginStart="60dp"
             android:layout_weight="1"
             android:padding="10dp"
-            android:background="@drawable/rounded_edittext"/>
+            android:textColor="#000000"
+            android:textColorHint="#000000"
+        android:background="@drawable/rounded_edittext"/>
 
 
     </LinearLayout>

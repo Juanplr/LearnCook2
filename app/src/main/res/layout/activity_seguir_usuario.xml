@@ -37,7 +37,8 @@
             android:fontFamily="@font/roboto"
             android:inputType="textCapWords|textAutoComplete"
             android:padding="10dp"
-            android:textColorHint="#021D3D"
+            android:textColor="#000000"
+        android:textColorHint="#000000"
             android:background="@drawable/rounded_edittext"/>
 
         <Button

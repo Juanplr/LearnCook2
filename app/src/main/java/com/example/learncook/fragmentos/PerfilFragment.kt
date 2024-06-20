@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.learncook.EditarPerfilActivity
 import com.example.learncook.LoginActivity
@@ -48,7 +49,7 @@ class PerfilFragment : Fragment() {
         }
 
         binding.btnEliminarP.setOnClickListener {
-            eliminarCuenta()
+            mostrarDialogoConfirmacion()
         }
         binding.btnBuscar.setOnClickListener {
             val intent = Intent(requireContext(), SeguirUsuarioActivity::class.java)
@@ -60,6 +61,18 @@ class PerfilFragment : Fragment() {
             intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
         }
+    }
+
+    private fun mostrarDialogoConfirmacion() {
+        // Crear un AlertDialog para confirmar la eliminación del perfil
+        AlertDialog.Builder(requireContext())
+            .setTitle("Eliminar perfil")
+            .setMessage("¿Estás seguro de que deseas eliminar tu perfil? Se perderá toda tu información.")
+            .setPositiveButton("Eliminar") { dialog, which ->
+                eliminarCuenta()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun eliminarCuenta() {
@@ -80,6 +93,9 @@ class PerfilFragment : Fragment() {
             mostrarMensaje("Error al eliminar la cuenta. Por favor, inténtalo nuevamente.")
         }
     }
+
+
+
 
     private fun mostrarMensaje(mensaje: String) {
         // Método para mostrar un Toast o AlertDialog con el mensaje proporcionado
