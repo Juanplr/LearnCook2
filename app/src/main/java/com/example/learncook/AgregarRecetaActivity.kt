@@ -34,7 +34,7 @@ class AgregarRecetaActivity : AppCompatActivity() {
 
         adapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.spiner_item,
             listaDeIngredientes.map { it.nombre }
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

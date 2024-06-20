@@ -77,10 +77,14 @@ class RecetaFragment : Fragment(), ListenerRecycleReceta {
 
     override fun clicEliminarReceta(receta: RecetaDatos, position: Int) {
         var idReceta = receta.idReceta
+        modelo.eliminarIngredientes(idReceta)
+        modelo.eliminarCalificaciones(idReceta)
         var elimidado = modelo.eliminarReceta(idReceta);
         if(elimidado>0){
             Toast.makeText(context, "Receta eliminada", Toast.LENGTH_SHORT).show()
             cargarMisRecetas()
+        }else{
+            Toast.makeText(context, "Error al eliminar la receta", Toast.LENGTH_SHORT).show()
         }
     }
 

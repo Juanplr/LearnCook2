@@ -578,7 +578,6 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
     fun eliminarReceta(idReceta: Int): Long {
         val db = writableDatabase
         var result: Long = -1
-
         try {
             result = db.delete(NOMBRE_TABLA_RECETA, "$COL_ID_RECETA = ?", arrayOf(idReceta.toString())).toLong()
         } catch (e: SQLException) {
@@ -586,7 +585,32 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         } finally {
             db.close()
         }
+        return result
+    }
+    fun eliminarIngredientes(idReceta: Int): Long {
+        val db = writableDatabase
+        var result: Long = -1
 
+        try {
+            result = db.delete(NOMBRE_TABLA_RECETAINGREDIENTES, "$COL_RECETA_ID = ?", arrayOf(idReceta.toString())).toLong()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.close()
+        }
+        return result
+    }
+    fun eliminarCalificaciones(idReceta: Int): Long {
+        val db = writableDatabase
+        var result: Long = -1
+
+        try {
+            result = db.delete(NOMBRE_TABLA_CALIFICACIONES, "$COL_RECETA_ID_CALIFICACION = ?", arrayOf(idReceta.toString())).toLong()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.close()
+        }
         return result
     }
 
@@ -755,5 +779,33 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         val filasAfectadas = db.update(NOMBRE_TABLA_RECETAINGREDIENTES, valoresUpdate, "$COL_INGREDIENTE_ID = ?", arrayOf(ingrediente.id.toString()))
         db.close()
         return filasAfectadas
+    }
+
+    fun agregarIngrediente(idReceta: Int, ingrediente: Ingrediente): Long {
+        val db = writableDatabase
+        var resultado: Long = -1
+
+        try {
+            db.beginTransaction()
+
+                val contentValues = ContentValues().apply {
+                    put(COL_RECETA_ID, idReceta)
+                    put(COL_INGREDIENTE_ID, ingrediente.id)
+                    put(COL_CANTIDAD, ingrediente.cantidad)
+                }
+                val insertResult = db.insert(NOMBRE_TABLA_RECETAINGREDIENTES, null, contentValues)
+                if (insertResult == -1L) {
+                    throw SQLException("Error al insertar ingredientes")
+                }
+            db.setTransactionSuccessful()
+            resultado = 1
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            db.endTransaction()
+            db.close()
+        }
+
+        return resultado
     }
 }

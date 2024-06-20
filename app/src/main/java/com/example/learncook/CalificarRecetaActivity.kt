@@ -101,7 +101,7 @@ class CalificarRecetaActivity : AppCompatActivity() {
             Toast.makeText(this@CalificarRecetaActivity, "Calificacion agregada correctamente", Toast.LENGTH_SHORT).show()
             mostarcalificaciones()
         }else{
-            Toast.makeText(this@CalificarRecetaActivity, "Error al agregarcalificacion", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@CalificarRecetaActivity, "Tu ya calificaste esta receta", Toast.LENGTH_SHORT).show()
         }
     }
 

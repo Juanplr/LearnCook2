@@ -40,7 +40,7 @@ class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
 
         adapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.spiner_item,
             listaDeIngredientes.map { it.nombre }
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -87,7 +87,7 @@ class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
         binding.tblIngredientes.addView(nuevaFila)
         idIngrediente.add(ingrediente.id)
 
-        Toast.makeText(this, "Ingrediente agregado: $ingrediente", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Ingrediente agregado: ${ingrediente.nombre}", Toast.LENGTH_SHORT).show()
     }
 
     private fun obtenerIngredientesSeleccionados(): List<String> {
@@ -115,12 +115,13 @@ class BuscarIngredienteActivity : AppCompatActivity(), ListenerRecycleReceta {
             for (receta in recetas) {
                 receta.ingredientes = learnCookDB.optenerLosIngredientesPorIdRecetas(receta.idReceta)
             }
-
-            recetaAdapter = RecetaAdapter(recetas, this@BuscarIngredienteActivity)
-            binding.recycleRecetas.adapter = recetaAdapter
-            recetaAdapter.notifyDataSetChanged()
-        } else {
-            Toast.makeText(this, "No se encontraron recetas con los ingredientes seleccionados", Toast.LENGTH_SHORT).show()
+            if(recetas.isNotEmpty()) {
+                recetaAdapter = RecetaAdapter(recetas, this@BuscarIngredienteActivity)
+                binding.recycleRecetas.adapter = recetaAdapter
+                recetaAdapter.notifyDataSetChanged()
+            }else {
+                Toast.makeText(this, "No se encontraron recetas con los ingredientes seleccionados", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
