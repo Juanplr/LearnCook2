@@ -61,6 +61,7 @@ class PerfilFragment : Fragment() {
             intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
         }
+        traerDatos()
     }
 
     private fun mostrarDialogoConfirmacion() {
@@ -94,6 +95,11 @@ class PerfilFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        traerDatos()
+    }
+
 
 
 
@@ -102,6 +108,10 @@ class PerfilFragment : Fragment() {
         Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
     }
 
+    private fun traerDatos(){
+        var usuario = modelo.traerNombreDeUsuario(idUsuario)
+        binding.nombreUser.text = usuario
+    }
     companion object {
         @JvmStatic
         fun newInstance(idUsuario: Int) =

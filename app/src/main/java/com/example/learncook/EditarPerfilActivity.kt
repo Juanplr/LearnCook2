@@ -34,7 +34,6 @@ class EditarPerfilActivity : AppCompatActivity() {
 
         binding.etNombreActual.setText(usuario.nombreUsuario)
         binding.etCorreoActual.setText(usuario.correo)
-        binding.etNuevoCorreo.setText(usuario.correo)
         binding.etContraseAActual.setText(usuario.contrasena)
 
         binding.btnGuardarCambios.setOnClickListener {
@@ -56,6 +55,10 @@ class EditarPerfilActivity : AppCompatActivity() {
                 Toast.makeText(this, "El correo electrónico ya está en uso", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            if(db.usuarioNombreRegistrado(nombreNuevo) && nombreNuevo != usuario.nombreUsuario){
+                Toast.makeText(this, "El nombrede usuario ya está en uso", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             db.actualizarNombreUsuario(usuario.id, nombreNuevo)
             db.actualizarContrasena(usuario.correo, contrasenaNueva)
@@ -68,6 +71,9 @@ class EditarPerfilActivity : AppCompatActivity() {
             intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
 
+            finish()
+        }
+        binding.btnCancelarCambios.setOnClickListener {
             finish()
         }
     }
