@@ -245,6 +245,10 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         db.close()
         return existe
     }
+
+
+
+
     fun actualizarContrasena(correo: String, contrasena: String):Int{
         val db = writableDatabase
         val valoresUpdate = ContentValues().apply {
@@ -254,6 +258,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         db.close()
         return filasA
     }
+
 
     fun usuarioNombreRegistrado(nombreUsuario: String): Boolean {
         val db = readableDatabase
@@ -514,7 +519,7 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
 
         return nombreUsuario
     }
-    fun traerUsuario2(idUsuario: Int): Usuario? {
+    fun  traerUsuario2(idUsuario: Int): Usuario? {
         val db = readableDatabase
         val columnas = arrayOf(COL_ID_USUARIO, COL_CORREO, COL_CONTRASENA, COL_NOMBRE_USUARIO)
         val selection = "$COL_ID_USUARIO = ?"
@@ -830,6 +835,16 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         cursor.close()
         db.close()
         return recetas
+    }
+
+    fun actualizarNombreUsuario(idUsuario: Int, nuevoNombre: String): Int {
+        val db = writableDatabase
+        val valoresUpdate = ContentValues().apply {
+            put(COL_NOMBRE_USUARIO, nuevoNombre)
+        }
+        val filasAfectadas = db.update(NOMBRE_TABLA_USUARIO, valoresUpdate, "$COL_ID_USUARIO = ?", arrayOf(idUsuario.toString()))
+        db.close()
+        return filasAfectadas
     }
 
 

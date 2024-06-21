@@ -81,6 +81,35 @@
         android:textColor="@color/black"
         android:textColorHint="@color/black"/>
 
+    <EditText
+        android:id="@+id/et_nombre_actual"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nombre actual"
+        android:fontFamily="@font/display"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/rounded_edittext"
+        android:layout_marginBottom="10dp"
+        android:padding="10dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginStart="50dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"/>
+
+    <EditText
+        android:id="@+id/et_nuevo_nombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nuevo nombre"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rounded_edittext"
+        android:padding="10dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginStart="50dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"/>
+
     <Button
         android:id="@+id/btn_guardar_cambios"
         android:layout_width="wrap_content"

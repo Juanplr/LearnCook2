@@ -32,17 +32,17 @@ class EditarPerfilActivity : AppCompatActivity() {
             return
         }
 
-        // Set the user data in the EditText fields
+        binding.etNombreActual.setText(usuario.nombreUsuario)
         binding.etCorreoActual.setText(usuario.correo)
         binding.etNuevoCorreo.setText(usuario.correo)
         binding.etContraseAActual.setText(usuario.contrasena)
 
-        // Set the listeners for the buttons
         binding.btnGuardarCambios.setOnClickListener {
+            val nombreNuevo = binding.etNuevoNombre.text.toString()
             val correoNuevo = binding.etNuevoCorreo.text.toString()
             val contrasenaNueva = binding.etNuevaContraseA.text.toString()
 
-            if (correoNuevo.isEmpty() || contrasenaNueva.isEmpty()) {
+            if (nombreNuevo.isEmpty() || correoNuevo.isEmpty() || contrasenaNueva.isEmpty()) {
                 Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -57,11 +57,13 @@ class EditarPerfilActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            db.actualizarNombreUsuario(usuario.id, nombreNuevo)
             db.actualizarContrasena(usuario.correo, contrasenaNueva)
             db.actualizarCorreo(usuario.correo, correoNuevo)
 
             Toast.makeText(this, "Cambios guardados", Toast.LENGTH_SHORT).show()
 
+     
             val intent = Intent(this, PerfilFragment::class.java)
             intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
