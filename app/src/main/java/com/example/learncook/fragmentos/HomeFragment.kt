@@ -39,6 +39,7 @@ class HomeFragment : Fragment() {
         // Configurar los listeners para los botones
         binding.btnBuscarP.setOnClickListener {
             val intent = Intent(requireContext(), BuscarPresupuestoActivity::class.java)
+            intent.putExtra("idUsuario", idUsuario)
             startActivity(intent)
         }
 

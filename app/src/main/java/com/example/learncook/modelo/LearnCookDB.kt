@@ -814,26 +814,54 @@ class LearnCookDB(contexto: Context): SQLiteOpenHelper(contexto,NOMBRE_DB,null,V
         return resultado
     }
 
-    fun buscarRecetasPorPresupuesto(presupuesto: Double): List<Receta> {
-        val db = readableDatabase
-        val recetas = mutableListOf<Receta>()
-        val cursor = db.rawQuery("SELECT * FROM $NOMBRE_TABLA_RECETA WHERE $COL_PRESUPUESTO <= ?", arrayOf(presupuesto.toString()))
+    fun buscarRecetasPorPresupuesto(minimo: Double, maximo:Double): List<RecetaDatos> {
+        val db = this.readableDatabase
+        val recetas = mutableListOf<RecetaDatos>()
 
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
-                val usuarioId = cursor.getInt(cursor.getColumnIndexOrThrow(COL_USUARIO_ID))
+        val query = """
+                    SELECT 
+                        r.$COL_ID_RECETA, 
+                        u.$COL_NOMBRE_USUARIO, 
+                        r.$COL_NOMBRE_RECETA, 
+                        r.$COL_TIEMPO, 
+                        r.$COL_PRESUPUESTO, 
+                        r.$COL_PREPARACION
+                    FROM $NOMBRE_TABLA_RECETA r, $NOMBRE_TABLA_USUARIO u, $NOMBRE_TABLA_RECETAINGREDIENTES ri
+                    WHERE r.$COL_PRESUPUESTO >= ? 
+                     AND r.$COL_PRESUPUESTO <= ?
+                        AND ri.$COL_RECETA_ID = r.$COL_ID_RECETA 
+                        AND u.$COL_ID_USUARIO = r.$COL_USUARIO_ID """
+
+        var cursor: Cursor? = null
+
+        try {
+            cursor = db.rawQuery(query, arrayOf(minimo.toString(),maximo.toString()))
+
+            while (cursor.moveToNext()) {
+                val idReceta = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_RECETA))
+                val nombreUsuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_USUARIO))
                 val nombreReceta = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOMBRE_RECETA))
                 val tiempo = cursor.getString(cursor.getColumnIndexOrThrow(COL_TIEMPO))
-                val presupuestoReceta = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
+                val presupuesto = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_PRESUPUESTO))
                 val preparacion = cursor.getString(cursor.getColumnIndexOrThrow(COL_PREPARACION))
 
-                val receta = Receta(id, usuarioId, nombreReceta, tiempo, presupuestoReceta, preparacion)
-                recetas.add(receta)
-            } while (cursor.moveToNext())
+                var valoresReceta = RecetaDatos(
+                    idReceta,
+                    nombreUsuario,
+                    nombreReceta,
+                    tiempo,
+                    presupuesto,
+                    preparacion,
+                    null
+                )
+                recetas.add(valoresReceta)
+            }
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        } finally {
+            cursor?.close()
+            db.close()
         }
-        cursor.close()
-        db.close()
         return recetas
     }
 
