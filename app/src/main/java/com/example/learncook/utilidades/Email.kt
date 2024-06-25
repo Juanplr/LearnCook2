@@ -26,7 +26,7 @@ class Email {
                 val session = Session.getInstance(properties, object : Authenticator() {
                     override fun getPasswordAuthentication(): PasswordAuthentication {
                         // Aquí se deben proporcionar las credenciales de correo electrónico desde las que se enviará el correo
-                        return PasswordAuthentication("drannet9@gmail.com", "qnjkswqvuonuporj")
+                        return PasswordAuthentication("drannet9@gmail.com", "uwsccwxluhzmibic")
                     }
                 })
 

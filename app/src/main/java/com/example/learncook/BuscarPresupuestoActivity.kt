@@ -16,7 +16,7 @@ import com.example.learncook.poko.RecetaDatos
 class BuscarPresupuestoActivity : AppCompatActivity(), ListenerRecycleReceta {
     private lateinit var binding: ActivityBuscarPresupuestoBinding
     private lateinit var db: LearnCookDB
-    private lateinit var recetas: List<RecetaDatos>
+    private  var recetas = mutableListOf<RecetaDatos>()
     private lateinit var recetaAdapter: RecetaAdapter
     private var idUsuario = -1
 
@@ -40,7 +40,11 @@ class BuscarPresupuestoActivity : AppCompatActivity(), ListenerRecycleReceta {
     private fun buscarRecetasPorPresupuesto(presupuestoMinimo: String, presupuestoMaximo: String) {
         var minimo = presupuestoMinimo.toDouble()
         var maximo = presupuestoMaximo.toDouble()
-        recetas = db.buscarRecetasPorPresupuesto(minimo, maximo)
+        val recetasUnicas = mutableSetOf<RecetaDatos>()
+        val recetasEncontradas = db.buscarRecetasPorPresupuesto(minimo, maximo)
+        recetasUnicas.addAll(recetasEncontradas)
+        recetas.clear()
+        recetas.addAll(recetasUnicas)
         if(recetas.isNotEmpty()){
             for (receta in recetas) {
                 receta.ingredientes = db.optenerLosIngredientesPorIdRecetas(receta.idReceta)
