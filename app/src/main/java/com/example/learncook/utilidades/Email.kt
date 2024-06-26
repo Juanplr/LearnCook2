@@ -1,5 +1,6 @@
 package com.example.learncook.utilidades
 
+import android.annotation.SuppressLint
 import android.util.Log
 import java.util.Properties
 import javax.mail.Authenticator
@@ -12,6 +13,7 @@ import javax.mail.internet.MimeMessage
 
 class Email {
 
+    @SuppressLint("SuspiciousIndentation")
     suspend fun sendEmail(to: String, subject: String, body: String): Boolean {
         var bandera = false
             try {
